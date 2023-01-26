@@ -4,16 +4,19 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { findById } = require('../models/User');
+const decodeToken = require('../middleware/decodeuser');
+const JWT_SECRET = 'mynameiskhan';
 
-//Creating a User--> POST Method --> /api/auth/create_user
-router.post('/create_user', [
+//ROUTE:1 Creating a User--> POST Method --> /api/auth/signup :No login required
+router.post('/signup', [
     body('name', 'name must be atleast 3 characters long!').isLength({ min: 3 }),
     body('email', 'Enter a Valid Email Address').isEmail(),
     body('password', 'Password must be atleast 5 character long!').isLength({ min: 5 })
 ], async (req, res) => {
     console.log(req.body);
-    const errors = validationResult(req);
     // Finds the validation errors in this request and wraps them in an object with handy functions
+    const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
@@ -35,7 +38,7 @@ router.post('/create_user', [
             email: req.body.email
         })
 
-        const JWT_SECRET = 'mynameiskhan';
+
         const data = {
             user: {
                 id: user.id
@@ -46,8 +49,65 @@ router.post('/create_user', [
         res.json({ authToken });
     } catch (e) {
         console.error(e.message); //showing error message on console.
-        res.status(500).send("some problems occur!!"); //showing this error message in api response.
+        res.status(500).send("Interna Server Error!"); //showing this error message in api response.
     }
 })
+
+//ROUTE:2 Authenticating a User--> POST Method --> /api/auth/login :No login required
+router.post('/login', [
+    body('email', 'Enter a Valid Email Address').isEmail(),
+    body('password', 'Password should not be blank!').exists(),
+], async (req, res) => {
+
+    // Finds the validation errors in this request and wraps them in an object with handy functions
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { email, password } = req.body;  //Destructing
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ error: "Please try again with correct credentials!" });
+        }
+
+        const checkPasswd = await bcrypt.compare(password, user.password);
+        if (!checkPasswd) {
+            return res.status(400).json({ error: "Please try again with correct credentials!" });
+        }
+
+
+        const data = {         //Sending userId in payload to sign JWT token
+            user: {
+                id: user.id
+            }
+        }
+        const authToken = jwt.sign(data, JWT_SECRET);
+        res.json({ authToken });
+
+
+    } catch (e) {
+        console.error(e.message);
+        res.status(500).send("Internal Server Error!");
+    }
+})
+
+
+//ROUTE:3 Get details of a User--> POST Method --> /api/auth/getuser :login required
+router.post('/getuser', decodeToken, async (req, res) => {  //decodeToken is a middleware here, which is called before sending req.(this will apend request body)
+
+    const userId = req.user.id;
+    try {
+        const user = await User.findById(userId).select('-password'); //This will fetch user details using id except the password.
+        res.json(user);
+
+    } catch (e) {
+        console.error(e.message);
+        res.status(500).send("Internal Server Error!");
+    }
+
+}
+)
 
 module.exports = router
