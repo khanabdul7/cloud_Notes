@@ -50,7 +50,7 @@ router.post('/addnote', decodeToken,[
 //ROUTE:3 Update an existing user note --> PUT Method --> /api/notes/updatenote :login required
 router.put('/updatenote/:id', decodeToken,[
     body('title', 'title must be atleast 3 characters long!').isLength({ min: 3 }),
-    body('description', 'description must be atleast 5 characters long!').isLength({ min: 5 })
+    body('description', 'description must be atleast 10 characters long!').isLength({ min: 10 })
 ], async (req, res) => {
 
     // Finds the validation errors in this request and wraps them in an object with handy functions
@@ -79,8 +79,26 @@ router.put('/updatenote/:id', decodeToken,[
         console.error(e.message);
         res.status(500).send("Internal Server Error!");
     }
+})
 
+//ROUTE:4 Delete an existing user note --> DELETE Method --> /api/notes/deletenote :login required
+router.delete('/deletenote/:id', decodeToken, async (req, res) => {
 
+    try {
+        const {title, description, tag} = req.body;
+       
+        //Find the note to be deleted and delete it
+        let note = await Notes.findById(req.params.id);
+        if(!note){ return res.status(404).send("Not Found!!")} //If note is not found
+
+        if(note.user.toString() !== req.user.id){ return res.status(404).send("Not Found!!")} //If updatedNote's id is not same the userId logged in.
+
+        note = await Notes.findByIdAndDelete(req.params.id);
+        res.status(200).json({"Success" :"Note Deleted Successfully! ",note: note});
+    } catch (e) {
+        console.error(e.message);
+        res.status(500).send("Internal Server Error!");
+    }
 
 })
 
