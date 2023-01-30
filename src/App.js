@@ -26,9 +26,9 @@ const App = () => {
 
   return (
     <>
-      <NoteState>
+    <NoteState>
         <RouterProvider router={router} />
-      </NoteState>
+    </NoteState>
     </>
   );
 }
