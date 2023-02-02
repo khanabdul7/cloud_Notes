@@ -15,7 +15,6 @@ const handleClick = (e) => {
     e.preventDefault(); //prevent from page reloading
     console.log("note added")
     addNote(note);
-
 }
 
     return (
@@ -34,7 +33,7 @@ const handleClick = (e) => {
                     <label htmlFor="tag" className="form-label">Tag</label>
                     <input type="text" className="form-control" id="tag" name="tag" onChange={handleChange} placeholder='Enter Tag (Optional)'/>
                 </div>
-                <button type="submit" className="btn btn-primary" onClick={handleClick}>Submit</button>
+                <button type="submit" className="btn btn-primary" onClick={handleClick}>Add Note</button>
             </form>
         </div>
     )
