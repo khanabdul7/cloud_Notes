@@ -45,20 +45,12 @@ const NoteState = (props) => {
           'Content-Type': 'application/json',
           'auth-token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjNkMjAxZDc4ZjlmNGRiMTc2NTY3ZGFkIn0sImlhdCI6MTY3NDcwNzQxNX0.F-QgxeJWk3TxP6R7-tNw-_TowgOwNolv6qbv6R1UjDQ'
         },
-        body: JSON.stringify(title, description, tag)
+        body: JSON.stringify({title, description, tag})
       });
       const data = await response.json();
       console.log("response from edit: ", data)
-
-      //Logic to edit in client side
-      for(let i=0; i<notes.length; i++){
-        const element = notes[i];
-        if (element._id === id){
-          element.title = title;
-          element.description = description;
-          element.tag = tag;
-        }
-      }
+      fetchAllNote();
+     
     }
 
     //Delete Note

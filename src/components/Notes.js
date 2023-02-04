@@ -13,12 +13,12 @@ const Notes = () => {
 
     const ref = useRef(null) //useRef hook is used to give references
     const refClose = useRef(null)
-    const [note, setNote] = useState({id:"", etitle: "", edescription: "", etag: ""})
+    const [note, setNote] = useState({ id: "", etitle: "", edescription: "", etag: "" })
 
     const updateNote = (CurrentNote) => {
         console.log("updating a note with id: ", CurrentNote._id)
         ref.current.click(); //calling modal for editing note.
-        setNote({id:CurrentNote._id , etitle:CurrentNote.title, edescription:CurrentNote.description, etag:CurrentNote.tag})
+        setNote({ id: CurrentNote._id, etitle: CurrentNote.title, edescription: CurrentNote.description, etag: CurrentNote.tag })
     }
 
 
@@ -73,6 +73,9 @@ const Notes = () => {
             </div>
             <div className='my-3 row'>
                 <h2 >Your Notes</h2>
+                <div className='container'>
+                    {notes.length === 0 && 'No Notes To Display !'}
+                </div>
                 {notes.map((note) => { return <NoteItem key={note._id} updatenotes={updateNote} notes={note} /> })}
             </div>
         </>
