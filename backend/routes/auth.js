@@ -13,6 +13,7 @@ router.post('/signup', [
     body('email', 'Enter a Valid Email Address').isEmail(),
     body('password', 'Password must be atleast 5 character long!').isLength({ min: 5 })
 ], async (req, res) => {
+    let success = false
     console.log(req.body);
     // Finds the validation errors in this request and wraps them in an object with handy functions
     const errors = validationResult(req);
@@ -24,7 +25,7 @@ router.post('/signup', [
         //Check if a user with this email is already exist
         let user = await User.findOne({ email: req.body.email });
         if (user) {
-            return res.status(400).json({ error: "Sorry, a user with this email is already exist!" })
+            return res.status(400).json({ success, error: "Sorry, a user with this email is already exist!" })
         }
 
         const salt = await bcrypt.genSalt(10); //Generating a salt. 
@@ -45,7 +46,8 @@ router.post('/signup', [
         }
         const authToken = jwt.sign(data, JWT_SECRET); //Signing a jwt token with payload(data) and signature(JWT_TOKEN)  
 
-        res.json({ authToken });
+        success = true
+        res.json({ success, authToken });
     } catch (e) {
         console.error(e.message); //showing error message on console.
         res.status(500).send("Interna Server Error!"); //showing this error message in api response.
@@ -57,7 +59,7 @@ router.post('/login', [
     body('email', 'Enter a Valid Email Address').isEmail(),
     body('password', 'Password should not be blank!').exists(),
 ], async (req, res) => {
-
+    let success = false
     // Finds the validation errors in this request and wraps them in an object with handy functions
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -68,12 +70,12 @@ router.post('/login', [
     try {
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(400).json({ error: "Please try again with correct credentials!" });
+            return res.status(400).json({ success, error: "Please try again with correct credentials!" });
         }
 
         const checkPasswd = await bcrypt.compare(password, user.password);
         if (!checkPasswd) {
-            return res.status(400).json({ error: "Please try again with correct credentials!" });
+            return res.status(400).json({ success, error: "Please try again with correct credentials!" });
         }
 
 
@@ -83,7 +85,8 @@ router.post('/login', [
             }
         }
         const authToken = jwt.sign(data, JWT_SECRET);
-        res.json({ authToken });
+        success = true
+        res.json({ success, authToken });
 
 
     } catch (e) {
@@ -96,10 +99,12 @@ router.post('/login', [
 //ROUTE:3 Get details of a User--> POST Method --> /api/auth/getuser :login required
 router.post('/getuser', decodeToken, async (req, res) => {  //decodeToken is a middleware here, which is called before sending req.(this will apend request body)
 
+    let success = false
     const userId = req.user.id;
     try {
         const user = await User.findById(userId).select('-password'); //This will fetch user details using id except the password.
-        res.json(user);
+        success = true
+        res.json({ success, user});
 
     } catch (e) {
         console.error(e.message);

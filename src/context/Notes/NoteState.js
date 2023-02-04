@@ -33,46 +33,40 @@ const NoteState = (props) => {
       const data = await response.json();
 
       //client side logic
-      setNotes(notes.concat({
-        "_id": "63d7dfbd98a61ce10df14047",
-        "user": "63d201d78f9f4db176567dad",
-        "title": note.title,
-        "description": note.description,
-        "tag": note.tag,
-        "Date": "2023-01-30T15:18:21.383Z",
-        "__v": 0
-      }))
+      fetchAllNote();
     }
 
     //Edit Note
     const editNote = async (id, title, description, tag) =>{
+      //API call
       const response = await fetch (`${host}api/notes/updatenote/${id}`, {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'auth-token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjNkMjAxZDc4ZjlmNGRiMTc2NTY3ZGFkIn0sImlhdCI6MTY3NDcwNzQxNX0.F-QgxeJWk3TxP6R7-tNw-_TowgOwNolv6qbv6R1UjDQ'
         },
-        body: JSON.stringify(title, description, tag)
+        body: JSON.stringify({title, description, tag})
       });
       const data = await response.json();
-
-      //Logic to edit in client side
-      for(let i=0; i<notes.length; i++){
-        const element = notes[i];
-        if (element._id === id){
-          element.title = title;
-          element.description = description;
-          element.tag = tag;
-        }
-      }
+      console.log("response from edit: ", data)
+      fetchAllNote();
+     
     }
 
     //Delete Note
-    const deleteNote = (id) =>{
+    const deleteNote = async (id) =>{
       console.log("Deleting note with id: ", id);
-      //TODO: API Call
+      //client side logic
       const newNotes = notes.filter((note)=> { return note._id !== id});
       setNotes(newNotes);
+      //TODO: API Call
+      const response = await fetch (`${host}api/notes/deletenote/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'auth-token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjNkMjAxZDc4ZjlmNGRiMTc2NTY3ZGFkIn0sImlhdCI6MTY3NDcwNzQxNX0.F-QgxeJWk3TxP6R7-tNw-_TowgOwNolv6qbv6R1UjDQ'
+        }
+      });
     }
    
     return (
