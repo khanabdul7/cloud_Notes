@@ -1,15 +1,26 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import NoteContext from '../context/Notes/NoteContext';
 import NoteItem from './NoteItem';
+import { useNavigate } from 'react-router-dom';
 
-const Notes = () => {
+const Notes = (props) => {
     const context = useContext(NoteContext);
     const { notes, fetchAllNote, editNote } = context;
-
+    const navigate = useNavigate()
     useEffect(() => {
-        fetchAllNote();
+        if(localStorage.getItem("token")){ //If User is logged in
+            fetchAllNote();
+        }
+        else{
+            navigate("/login")
+        }
         // eslint-disable-next-line
     }, [])
+
+    const capitalize = (word) => {
+          let lower = word.toLowerCase();
+          return lower.charAt(0).toUpperCase() + lower.slice(1); 
+      }
 
     const ref = useRef(null) //useRef hook is used to give references
     const refClose = useRef(null)
@@ -30,7 +41,7 @@ const Notes = () => {
         console.log("Updating note: ", note)
         editNote(note.id, note.etitle, note.edescription, note.etag)
         refClose.current.click(); //Closing modal after clicking in close button.
-
+        props.showAlert("Note Updated","info")
     }
 
     return (
@@ -72,11 +83,11 @@ const Notes = () => {
                 </div>
             </div>
             <div className='my-3 row'>
-                <h2 >Your Notes</h2>
+                <h2 >{capitalize(localStorage.getItem("name"))} Notes</h2>
                 <div className='container'>
-                    {notes.length === 0 && 'No Notes To Display !'}
+                    {notes.length === 0 && 'Please add a note to display here'}
                 </div>
-                {notes.map((note) => { return <NoteItem key={note._id} updatenotes={updateNote} notes={note} /> })}
+                {notes.map((note) => { return <NoteItem key={note._id} updatenotes={updateNote} notes={note} showAlert={props.showAlert} /> })}
             </div>
         </>
     )

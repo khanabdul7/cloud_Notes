@@ -5,6 +5,7 @@ const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const decodeToken = require('../middleware/decodeuser');
+const { default: userEvent } = require('@testing-library/user-event');
 const JWT_SECRET = 'mynameiskhan';
 
 //ROUTE:1 Creating a User--> POST Method --> /api/auth/signup :No login required
@@ -78,6 +79,7 @@ router.post('/login', [
             return res.status(400).json({ success, error: "Please try again with correct credentials!" });
         }
 
+        const name = user.name;
 
         const data = {         //Sending userId in payload to sign JWT token
             user: {
@@ -86,7 +88,7 @@ router.post('/login', [
         }
         const authToken = jwt.sign(data, JWT_SECRET);
         success = true
-        res.json({ success, authToken });
+        res.json({ success, name, authToken });
 
 
     } catch (e) {
